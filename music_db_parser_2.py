@@ -150,10 +150,10 @@ if (__name__ == "__main__"):
         outputSongName = music_id.find("info").find("ascii").text
         songFolder = s + "_" + outputSongName
         folderName = "data/music/" + songFolder
-        version = music_id.find("info").find("version")
+        version = music_id.find("info").find("version").text
 
-        if version == 5:
-            if glob.glob(folderName):
+        if glob.glob(folderName):
+            if version == 5:
                 createFolderIfNotExist(outputFolder + "/" + outputSongName)
                 for x in range(1,6):
                    if checkIfSpecificOggExist(folderName + "/" + songFolder, x) == 1:
