@@ -180,7 +180,7 @@ if (__name__ == "__main__"):
         raise SystemExit(USAGE)
     if args[0] == "--help":
         print(USAGE)
-    if args[1] >= 6:
+    if int(sys.argv[1]) > 5:
         raise SystemExit(DUMBFUCK)
     else:
         program()
