@@ -3,6 +3,7 @@ import glob
 import os
 from subprocess import Popen
 from shutil import copyfile
+import sys
 
 def copyPNGs(path, dest, number):
     for file in glob.glob(path + "/*" + number + ".png"):
@@ -80,7 +81,7 @@ def createFileIfNotExist(filePath):
 
 def runFFMPEGtoConvertSong(file, outputFile):
     #print("ffmpeg.exe -i " + file + outputFile)
-    os.system("ffmpeg.exe -i " + file + " " + outputFile)
+    os.system("ffmpeg.exe -n -i " + file + " " + outputFile)
 
 def getSpecificDifficultySongSound(file, number):
     if (number == 1):
@@ -135,12 +136,12 @@ def createOutputSong(file, outputFolder, xmls):
     #os.system("python v2k.py " + file + " " + fileName)
     os.system("python v2k.py " + file + " " + fileName)
 
-if (__name__ == "__main__"):
+def program():
     with open('music_db.xml', 'rb') as fp:
         # This is gross, but elemtree won't do it for us so whatever
         xmldata = fp.read().decode('shift_jisx0213')
         root = ET.fromstring(xmldata)
-    outputFolder = "kshoutput"
+        outputFolder = "kshoutput/"
     for music_id in root:
         s = music_id.attrib['id']
         while (len(s) < 4):
@@ -149,18 +150,37 @@ if (__name__ == "__main__"):
         outputSongName = music_id.find("info").find("ascii").text
         songFolder = s + "_" + outputSongName
         folderName = "data/music/" + songFolder
+        version = music_id.find("info").find("version").text
+
         if glob.glob(folderName):
-            createFolderIfNotExist(outputFolder + "/" + outputSongName)
-            for x in range(1,6):
-                if checkIfSpecificOggExist(folderName + "/" + songFolder, x) == 1:
-                    runFFMPEGtoConvertSong(getSpecificDifficultySongSound(folderName + "/" + songFolder, x), outputFolder + "/" + outputSongName +"/" + str(x) + ".ogg")
-            for x in range(1,6):
-                copyPNGs(folderName, outputFolder + "/" + outputSongName , str(x))
-            for file in glob.glob(folderName + "/*.vox"):
-                createOutputSong(file, outputFolder, music_id)
-            runFFMPEGtoConvertSong(folderName + "/" + songFolder + ".s3v", outputFolder + "/" + outputSongName +"/music.ogg")
+            if version == "3":
+                createFolderIfNotExist(outputFolder + "/" + outputSongName)
+                for x in range(1,6):
+                   if checkIfSpecificOggExist(folderName + "/" + songFolder, x) == 1:
+                     runFFMPEGtoConvertSong(getSpecificDifficultySongSound(folderName + "/" + songFolder, x), outputFolder + "/" + outputSongName +"/" + str(x) + ".ogg")
+                for x in range(1,6):
+                    copyPNGs(folderName, outputFolder + "/" + outputSongName , str(x))
+                for file in glob.glob(folderName + "/*.vox"):
+                    createOutputSong(file, outputFolder, music_id)
+                    runFFMPEGtoConvertSong(folderName + "/" + songFolder + ".s3v", outputFolder + "/" + outputSongName +"/music.ogg")
                 
-            #print(folderName + "/" + songFolder + ".s3v")
-            #print(outputFolder + "/" + outputSongName +"/music.ogg")
-        else:
-            print(folderName + " not found")
+                 #print(folderName + "/" + songFolder + ".s3v")
+                 #print(outputFolder + "/" + outputSongName +"/music.ogg")
+                else:
+                    print(folderName + " not found")
+
+
+
+if (__name__ == "__main__"):
+    USAGE = f"Usage: python {sys.argv[0]} [--help] | Use a number Between 1 and 6 corelating to the game version]"
+    DUMBFUCK = "DONT USE N-0 YOU IDIOT"
+
+    args = sys.argv[1:]
+    if not args:
+        raise SystemExit(USAGE)
+    if args[0] == "--help":
+        print(USAGE)
+    if args[1] >= 6:
+        raise SystemExit(DUMBFUCK)
+    else:
+        program()
