@@ -51,7 +51,7 @@ def createPrefixVox(title, artist, minBPM, maxBPM, effect, difficulty, level, di
     kmap += "\nillustrator=-"
     kmap += "\ndifficulty=" + getDifficultyList(difficulty)
     kmap += "\nlevel=" + level
-    kmap += "\nt=" + minBPM
+    kmap += "\nt=" + str(int(minBPM) /100)
     if (maxBPM != minBPM):
         kmap += "-" + maxBPM
     if (diffSongExist == 0):
@@ -103,7 +103,18 @@ def checkIfSpecificOggExist(file, number):
 
 def createOutputSong(file, outputFolder, xmls):
     songInfo = xmls.find("info")
-    title = songInfo.find("title_name").text
+    
+    titlething = songInfo.find("title_name").text
+    title = list(titlething)
+    arraylen = len(title)
+    for i in range(arraylen):
+        if title[i] == "齷":
+            title[i] = "é"
+        if title[i] == "曦":
+            title[i] = "à"
+        if title[i] == "罇":
+            title[i] = "ê"
+    title = "".join(title)
     artist = songInfo.find("artist_name").text
     minBPM = songInfo.find("bpm_min").text
     maxBPM = songInfo.find("bpm_max").text
@@ -153,7 +164,7 @@ def program():
         version = music_id.find("info").find("version").text
 
         if glob.glob(folderName):
-            if version == "3":
+            if version == sys.argv[1]:
                 createFolderIfNotExist(outputFolder + "/" + outputSongName)
                 for x in range(1,6):
                    if checkIfSpecificOggExist(folderName + "/" + songFolder, x) == 1:
@@ -170,6 +181,21 @@ def program():
                     print(folderName + " not found")
 
 
+def PrintTitles():
+    with open('music_db.xml', 'rb') as fp:
+        # This is gross, but elemtree won't do it for us so whatever
+        xmldata = fp.read().decode('shift_jisx0213')
+        root = ET.fromstring(xmldata)
+        outputFolder = "kshoutput/"
+    for music_id in root:
+        s = music_id.attrib['id']
+        while (len(s) < 4):
+            s = "0" + s
+        #print(s, music_id[0][5].text)
+        print(music_id.find("info").find("title_name").text)
+        
+
+
 
 if (__name__ == "__main__"):
     USAGE = f"Usage: python {sys.argv[0]} [--help] | Use a number Between 1 and 6 corelating to the game version]"
@@ -180,7 +206,12 @@ if (__name__ == "__main__"):
         raise SystemExit(USAGE)
     if args[0] == "--help":
         print(USAGE)
-    if int(sys.argv[1]) > 5:
-        raise SystemExit(DUMBFUCK)
+    if args[0] == "--title":
+        PrintTitles()
+    try:    
+        if int(sys.argv[1]) > 5:
+            raise SystemExit(DUMBFUCK)
+    except ValueError:
+        raise SystemExit()
     else:
         program()
