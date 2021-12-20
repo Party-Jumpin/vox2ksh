@@ -104,18 +104,39 @@ def checkIfSpecificOggExist(file, number):
 def createOutputSong(file, outputFolder, xmls):
     songInfo = xmls.find("info")
     
-    titlething = songInfo.find("title_name").text
-    title = list(titlething)
-    arraylen = len(title)
-    for i in range(arraylen):
-        if title[i] == "齷":
-            title[i] = "é"
-        if title[i] == "曦":
-            title[i] = "à"
-        if title[i] == "罇":
-            title[i] = "ê"
-    title = "".join(title)
+
+    #thanks to https://github.com/Subject38/SDVX-V-GST
+    accent_lut = {
+    '驩': 'Ø',
+    '齲': '♥',
+    '齶': '♡',
+    '趁': 'Ǣ',
+    '騫': 'á',
+    '曦': 'à',
+    '驫': 'ā',
+    '齷': 'é',
+    '曩': 'è',
+    '䧺': 'ê',
+    '骭': 'ü',
+    '隍': 'Ü',
+    '雋': 'Ǜ',
+    '鬻': '♃',
+    '鬥': 'Ã',
+    '鬆': 'Ý',
+    '鬮': '¡',
+    '龕': '€',
+    '蹙': 'ℱ',
+    '頽': 'ä',
+}
+
+
+
+
+    title = songInfo.find('title_name').text
     artist = songInfo.find("artist_name").text
+    for orig, rep in accent_lut.items():
+        title = title.replace(orig, rep)
+        artist = artist.replace(orig, rep)
     minBPM = songInfo.find("bpm_min").text
     maxBPM = songInfo.find("bpm_max").text
     outputFolder += "/" + songInfo.find("ascii").text
